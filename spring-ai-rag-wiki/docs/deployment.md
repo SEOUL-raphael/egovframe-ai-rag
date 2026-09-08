@@ -24,7 +24,7 @@
 
 | 계층 | 책임 | 교체·설정 위치 |
 |---|---|---|
-| 모델 연결 | 인증, 요청·응답 변환, 출력 한도 | ModelConfiguration, ChatModel 구현 |
+| 모델 연결 | 인증, 요청·응답 변환, 출력 한도 | ChatCompletionsConfiguration, ChatModel 구현 |
 | 지식 컴파일 | 주제별 페이지 생성 지시, 구조화 결과 변환 | WikiCompiler |
 | 지식 저장 | 초안·발행본·원문 사본 보관 | WikiStore, wiki.workspace |
 | 검색 | 질의에 관련된 Document 반환 | WikiDocumentRetriever |
@@ -32,7 +32,7 @@
 
 ## 모델 연결과 프로필 구성
 
-Spring AI가 제공하는 `ChatModel` 구현을 사용하거나, 대상 API에 맞는 어댑터를 구현해 Bean으로 등록한다. `ModelConfiguration`에서 이 Bean을 컴파일용·답변용 `ChatClient`에 연결한다. 프로필은 실행 환경에 맞는 Bean과 설정을 선택하는 단위이다.
+기본 `chat-model` 프로필은 `ChatCompletionsConfiguration`에서 Spring AI의 Chat Completions 호환 `ChatModel`을 등록한다. 다른 API 계약을 사용하려면 해당 계약을 지원하는 `ChatModel`을 Bean으로 등록한다. `ModelConfiguration`에서 이 Bean을 컴파일용·답변용 `ChatClient`에 연결한다. 프로필은 실행 환경에 맞는 Bean과 설정을 선택하는 단위이다.
 
 모델 연결을 추가하거나 교체할 때는 다음 순서로 구성한다.
 
@@ -57,15 +57,15 @@ mvn -B test package
 
 ## 외부 설정
 
-실행 환경별 값은 JAR 외부에서 주입한다. 아래 항목은 설정의 역할을 설명하며, 실제 속성 이름은 선택한 모델 구현과 프로필 설정을 따른다.
+실행 환경별 값은 JAR 외부에서 주입한다. 기본 프로필은 `application-chat-model.yml`에서 공급자와 독립적인 `LLM_*` 설정을 읽는다.
 
 | 설정 항목 | 역할 | 적용 위치 |
 |---|---|---|
 | 활성 프로필 | 사용할 모델 Bean과 환경 설정 선택 | `SPRING_PROFILES_ACTIVE` |
-| API 주소 | 외부 서비스 또는 내부 추론 서버 연결 | 모델 구현의 연결 설정 |
-| 모델 ID | 해당 서버에서 사용할 모델 지정 | 모델 구현의 모델 옵션 |
-| 자격증명 | 인증이 필요한 서버에 접근 | 환경변수 또는 비밀 설정 주입 |
-| 요청 제한 | 연결·응답 대기 시간과 출력량 조정 | HTTP 클라이언트 설정 및 모델 옵션 |
+| API 주소·경로 | 외부 서비스 또는 내부 추론 서버 연결 | `LLM_BASE_URL`, `LLM_COMPLETIONS_PATH` |
+| 모델 ID | 해당 서버에서 사용할 모델 지정 | `LLM_MODEL` |
+| 자격증명 | 서버에 접근 | `LLM_API_KEY` |
+| 요청 제한 | 연결·응답 대기 시간과 출력량 조정 | HTTP 설정 및 `LLM_MAX_TOKENS` |
 | 원문·작업 경로 | 입력 문서와 위키 발행 이력 보관 | `wiki.sources`, `wiki.workspace` |
 
 로컬 실행에서는 [환경 설정 예시](../.env.example)를 참고해 모듈 디렉터리에 `.env`를 준비한다. 사용할 프로필이 참조하는 실제 설정 키를 사용한다. Spring Config Import가 `.env`를 properties 형식으로 읽으므로 `export`나 셸 표현식 없이 `이름=값`으로 저장한다. 기존 파일의 설정은 보존하며 `.env`는 Git 제외 대상이다.
@@ -74,10 +74,10 @@ mvn -B test package
 
 ## 실행 명령
 
-아래 명령은 모델 연결 설정을 준비한 상태에서 모듈 디렉터리에서 실행한다. 먼저 `구성한_프로필_이름`을 실제 구현된 프로필 이름으로 바꿔 지정한다. 새 이름을 지정하는 것만으로 모델 연결이 생성되지는 않는다. 이후 명령은 같은 PowerShell 세션의 활성 프로필을 사용한다.
+아래 명령은 모델 연결 설정을 준비한 상태에서 모듈 디렉터리에서 실행한다. 기본 제공되는 `chat-model` 프로필을 지정한다. 다른 프로필을 추가하려면 대응하는 Bean 구성도 필요하다. 이후 명령은 같은 PowerShell 세션의 활성 프로필을 사용한다.
 
 ```powershell
-$env:SPRING_PROFILES_ACTIVE = "구성한_프로필_이름"
+$env:SPRING_PROFILES_ACTIVE = "chat-model"
 ```
 
 발행 명령의 `실제_초안_ID`도 컴파일 결과에 표시된 값으로 바꾼다.
@@ -114,7 +114,7 @@ java -jar target/spring-ai-rag-wiki-0.1.0-SNAPSHOT.jar --wiki.action=compile --w
 
 ## 모델 호출 한도와 장애 처리
 
-연결 제한은 5초, 응답 읽기 제한은 120초이다. 모델에 따라 `--spring.http.client.read-timeout=300s`로 변경할 수 있다. 출력 토큰 한도는 선택한 모델 구현의 옵션으로 지정한다. 속성 이름과 허용 범위는 구현별로 다르며, 문서량과 구조화 결과 크기를 고려해 설정한다.
+연결 제한은 5초, 응답 읽기 제한은 120초이다. 모델에 따라 `--spring.http.client.read-timeout=300s`로 변경할 수 있다. 출력 토큰 한도는 기본 연결에서 `LLM_MAX_TOKENS`로 지정한다. 속성 이름과 허용 범위는 구현별로 다르며, 문서량과 구조화 결과 크기를 고려해 설정한다.
 
 모델 연결 계층에서는 API 오류, 빈 응답, 출력 한도에 따른 중단의 처리 정책을 구성한다. 이러한 오류의 표시·처리 방식은 선택한 어댑터에서 확인한다. 컴파일 결과가 JSON 변환이나 저장 시 파일 계약을 만족하지 못하면 명령이 실패한다. 실패한 컴파일을 자동 발행하지 않으며 기존 발행본은 유지한다. 인증·모델 ID·할당량·네트워크 오류는 모델 연결 계층에서, 출력 형식과 초안 내용은 컴파일·편집 단계에서 확인한다.
 

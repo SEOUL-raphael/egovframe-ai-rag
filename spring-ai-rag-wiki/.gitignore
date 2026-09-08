@@ -10,4 +10,4 @@ logs/
 workspace/
 
 # Public profile template; contains placeholders only.
-!src/main/resources/application-minimax.yml
+!src/main/resources/application-chat-model.yml

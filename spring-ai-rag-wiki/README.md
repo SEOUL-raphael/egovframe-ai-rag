@@ -28,13 +28,15 @@ mvn -B package
 
 모델 없이 동작하는 자동 테스트는 임시 파일과 로컬 HTTP 고정 응답을 사용한다. 실제 컴파일과 답변에는 동기 텍스트 생성이 가능한 모델 연결을 준비해야 한다. 컴파일은 구조화된 JSON 결과를 요구하므로 선택한 모델의 출력 지원을 확인한다.
 
-[모델 연결 설정](docs/MODEL_CONFIGURATION.md)에서 제공되는 구성을 선택하고 [.env.example](.env.example)을 참고해 모듈 디렉터리에 `.env`를 작성한다. 모델 ID의 `replace-with-...` 값은 반드시 해당 서버에서 사용할 수 있는 실제 ID로 교체한다. 인증이 필요한 연결은 사용 권한과 자격증명도 필요하다. 프로필 이름을 임의로 추가하는 것만으로 새로운 모델 연결이 생성되지는 않는다.
+기본 `chat-model` 프로필의 [공통 모델 연결 설정](docs/MODEL_CONFIGURATION.md)을 확인하고 [.env.example](.env.example)을 참고해 모듈 디렉터리에 `.env`를 작성한다. 모델 ID의 `replace-with-...` 값은 반드시 해당 서버에서 사용할 수 있는 실제 ID로 교체한다. 인증이 필요한 연결은 사용 권한과 자격증명도 필요하다. 프로필 이름을 임의로 추가하는 것만으로 새로운 모델 연결이 생성되지는 않는다.
 
 ## 실행 순서
 
-아래 명령은 선택한 모델의 설정과 필요한 활성 프로필이 준비된 같은 셸에서 실행한다.
+아래 명령은 `LLM_BASE_URL`, `LLM_COMPLETIONS_PATH`, `LLM_API_KEY`, `LLM_MODEL`을 준비한 같은 셸에서 실행한다.
 
 ```powershell
+$env:SPRING_PROFILES_ACTIVE = "chat-model"
+
 # 원문에서 초안 생성: 출력되는 DRAFT ID를 기록한다.
 java -jar target/spring-ai-rag-wiki-0.1.0-SNAPSHOT.jar --wiki.action=compile
 
@@ -56,7 +58,8 @@ java -jar target/spring-ai-rag-wiki-0.1.0-SNAPSHOT.jar --wiki.action=ask --wiki.
 - `WikiStore`: 원문 사본·해시, 초안, 발행 이력을 파일로 보관한다. 발행할 때 검색 가능한 파일 형식을 확인한 후 현재 버전 포인터를 바꾼다.
 - `WikiDocumentRetriever`: 키워드 일치 점수로 최대 3개 전체 페이지를 선택한다.
 - `WikiAnswerer`: Spring AI Advisor를 통해 검색 문맥을 답변용 `ChatClient`에 전달한다.
-- `ModelConfiguration`: 모델 연결 구현과 컴파일용·답변용 클라이언트의 출력 옵션을 구성한다.
+- `ChatCompletionsConfiguration`: 공통 외부 설정으로 Chat Completions 호환 API를 연결한다.
+- `ModelConfiguration`: `ChatModel`을 컴파일용·답변용 `ChatClient`에 주입한다.
 
 예제 자료는 가상 업무 안내이며 실제 행정 기준이 아니다. 생성 결과는 누락·왜곡될 수 있고 출처 표시는 의미적 정확성을 보증하지 않는다. 처음부터 전체 파이프라인을 살펴볼 수 있도록 단일 사용자 CLI로 구성했으며, 운영 서비스의 인증·동시 편집·증분 병합은 구현 범위 밖이다. 자세한 입력·출력 제한과 운영 시 고려사항은 기술 가이드를 따른다.
 

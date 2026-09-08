@@ -41,8 +41,8 @@ public class WikiApplication {
                         --wiki.action=search --wiki.query="재신청 예외"
                         --wiki.action=ask --wiki.query="재신청 예외 조건은 무엇인가요?"
                         선택: --wiki.sources=examples/sources --wiki.workspace=workspace
-                        모델 설정: 환경변수 WIKI_MODEL, OLLAMA_BASE_URL
-                        MiniMax 설정: --spring.profiles.active=minimax 및 MINIMAX_API_KEY/API_URL/MODEL
+                        모델 설정: LLM_BASE_URL, LLM_COMPLETIONS_PATH, LLM_API_KEY, LLM_MODEL
+                        기본 프로필: chat-model (Chat Completions 호환 API)
                         """);
             }
         };
