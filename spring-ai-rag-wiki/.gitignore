@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+target/
+.idea/
+*.iml
+.vscode/
+data/generated/
+logs/
+workspace/
+
+# Public profile template; contains placeholders only.
+!src/main/resources/application-minimax.yml

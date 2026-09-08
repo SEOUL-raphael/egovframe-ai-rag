@@ -1,16 +1,19 @@
 # 전자정부 표준프레임워크 AI RAG 샘플
 
 RAG(Retrieval-Augmented Generation) 기반의 AI 질의응답 시스템 샘플 프로젝트이다.
-동일한 목적을 서로 다른 기술 스택으로 구현한 두 가지 샘플을 제공한다.
+같은 목적을 서로 다른 기술 스택과 지식 구성 방식으로 구현한 샘플을 제공한다.
 
 ## 프로젝트 구성
 
-| 프로젝트 | AI 프레임워크 | 벡터 저장소 | 상세 문서 |
+| 프로젝트 | AI 프레임워크 | 지식 저장소 | 상세 문서 |
 | :------- | :----------- | :---------- | :-------- |
 | [spring-ai-rag-redis-stack](./spring-ai-rag-redis-stack) | Spring AI 1.0.1 | Redis Stack | [README](./README-spring-ai-rag-redis-stack.md) |
 | [langchain4j-ai-rag-postgre](./langchain4j-ai-rag-postgre) | LangChain4j 1.8.0 | PostgreSQL (PGVector) | [README](./README-langchain4j-ai-rag-postgre.md) |
+| [spring-ai-rag-wiki](./spring-ai-rag-wiki) | Spring AI 1.0.1 | Markdown 위키 파일 | [README](./spring-ai-rag-wiki/README.md) |
 
 ## 공통 환경
+
+JDK·Spring Boot·Maven 버전은 공통이다. 아래 모델·컨테이너 준비와 테스트 환경은 기존 벡터 저장소 샘플 기준이며, 위키 CLI의 모델 연결과 실행 조건은 [위키 예제 README](./spring-ai-rag-wiki/README.md)를 따른다.
 
 | 항목 | 버전 |
 | :--- | :--- |
@@ -47,7 +50,7 @@ RAG(Retrieval-Augmented Generation) 기반의 AI 질의응답 시스템 샘플 �
 | LLM | Qwen/Qwen3-8B | 8B |
 | LLM | Qwen/Qwen3-4B | 4B |
 
-## 공통 사전 준비
+## 벡터 저장소 샘플 사전 준비
 
 1. [Ollama](https://ollama.com/download) 설치 및 사용할 LLM 모델을 설치한다. 폐쇄망의 경우에는 아래 `폐쇄망에서의 Ollama` 항목을 참고한다.
 2. ONNX 임베딩 모델을 생성한다. 아래 `Onnx 모델 익스포트` 항목을 참고한다. 모델 파일의 배치 경로는 프로젝트마다 다르므로 각 프로젝트 README를 확인한다.

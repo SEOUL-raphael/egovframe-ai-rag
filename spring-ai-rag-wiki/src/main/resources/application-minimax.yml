@@ -1,0 +1,11 @@
+spring:
+  ai:
+    model:
+      chat: none
+      embedding: none
+wiki:
+  minimax:
+    api-url: ${MINIMAX_API_URL:https://api.minimax.io/v1/text/chatcompletion_v2}
+    api-key: ${MINIMAX_API_KEY:}
+    model: ${MINIMAX_MODEL:replace-with-accessible-model-id}
+    max-tokens: 8192
